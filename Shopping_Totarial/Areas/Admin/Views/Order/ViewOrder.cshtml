@@ -1,0 +1,81 @@
+﻿@model IEnumerable<OrderDetails>
+@{
+    ViewData["title"] = "Order Details";
+    decimal total = 0; // Store total account
+    decimal subtotal = 0;
+}
+
+<h3>List Order</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Order Code</th>
+            <th scope="col">Username</th>
+            <th scope="col">Product Name</th>
+            <th scope="col">Product Price</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            subtotal = item.Quantity * item.Price; // số lượng * đơn giá
+            total += subtotal;
+            <tr>
+                <input type="hidden" asp-for="@item.OrderCode" class="getId" />
+                <th>@item.Id</th>
+                <th scope="row">@item.OrderCode</th>
+                <td>@item.UserName</td>
+                <td>@item.Product.Name</td>
+                <td>$@item.Price</td>
+                <td>@item.Quantity</td>
+                <td>@subtotal.ToString("C")</td>
+                 
+            </tr>
+        }
+        <tr>
+            <th colspan="5">Total:</th>
+            <td>@total.ToString("C")</td>
+            <td>
+                <select class="form-control select-update-order">
+                    <option value="1">Đơn hàng mới</option>
+                    <option value="0">Đã xử lý</option>
+                </select>
+            </td>
+        </tr>
+
+    </tbody>
+
+</table>
+
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $('.select-update-order').change(function () {
+                var status = $(this).val();
+                var ordercode = $('.getId').val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("UpdateOrder")",
+                    data: { status: status, ordercode: ordercode }, // Send datato the server
+
+                    success: function (result) {
+                        // Handle successfull update 
+                        if (result.success) {
+                            // Update UI or show success message
+                            Swal.fire("Cập nhật đơn hàng thành công.");
+                        } else {
+                            // Handle error
+                            Swal.fire("Cập nhật đơn hàng thất bại." + result.message;
+
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+} 
